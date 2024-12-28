@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile.dev
+    container_name: backend
+    networks:
+      - node-network
+    ports:
+      - "8000:8000"
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./server:/usr/src/app
+      - /usr/src/app/node_modules
+
+  frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile.dev
+    container_name: frontend
+    networks:
+      - node-network
+    ports:
+      - "5173:5173"
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./client:/usr/src/app
+      - /usr/src/app/node_modules
+
+  db:
+    image: postgres:latest
+    container_name: db
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER=postgres
+      POSTGRES_PASSWORD=1234
+      POSTGRES_DB=dev_db
+    volumes:
+      - ./data:/var/lib/postgresql/data
+    networks:
+      - node-network
+
+  nginx:
+    build:
+      context: ./nginx
+    container_name: nginx
+    networks:
+      - node-network
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+      - frontend
+
+networks:
+  node-network:
+    driver: bridge

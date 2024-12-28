@@ -1,0 +1,674 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               Int        @id @default(autoincrement())
+  email            String     @unique
+  password         String
+  role             String
+  firstName        String
+  lastName         String
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+  deleted          Boolean    @default(false)
+  deletedAt        DateTime?
+  employee         Employee?
+  createdEmployees Employee[] @relation("CreatedBy")
+  updatedEmployees Employee[] @relation("UpdatedBy")
+  auditLogs        AuditLog[]
+}
+
+model Employee {
+  id                           Int                    @id @default(autoincrement())
+  userId                       Int                    @unique
+  user                         User                   @relation(fields: [userId], references: [id])
+  firstName                    String
+  lastName                     String
+  email                        String                 @unique
+  department                   String[]
+  position                     Position
+  hireDate                     DateTime?
+  salary                       Float?
+  phoneNumber                  String?
+  address                      String?
+  createdAt                    DateTime               @default(now())
+  updatedAt                    DateTime               @updatedAt
+  createdById                  Int
+  createdBy                    User                   @relation("CreatedBy", fields: [createdById], references: [id])
+  updatedById                  Int
+  updatedBy                    User                   @relation("UpdatedBy", fields: [updatedById], references: [id])
+  deleted                      Boolean                @default(false)
+  deletedAt                    DateTime?
+  schedules                    Schedule[]
+  Appointments                 Appointments[]
+  consultations                Consultations[]
+  billings                     Billings[]
+  notes                        Note[]
+  InventoryTransaction         InventoryTransaction[]
+  InventoryCount               InventoryCount[]
+  createdPOs                   PurchaseOrder[]        @relation("CreatedBy")
+  updatedPOs                   PurchaseOrder[]        @relation("UpdatedBy")
+  PurchaseOrder                PurchaseOrder[]
+  createdConsultations         Consultations[]        @relation("CreatedBy")
+  updatedConsultations         Consultations[]        @relation("UpdatedBy")
+  createdAppointments          Appointments[]         @relation("CreatedBy")
+  updatedAppointments          Appointments[]         @relation("UpdatedBy")
+  createdPatients              Patients[]             @relation("CreatedBy")
+  updatedPatients              Patients[]             @relation("UpdatedBy")
+  createdPatientTriages        PatientTriage[]        @relation("CreatedBy")
+  updatedPatientTriages        PatientTriage[]        @relation("UpdatedBy")
+  createdPatientAssessments    PatientAssessment[]    @relation("CreatedBy")
+  updatedPatientAssessments    PatientAssessment[]    @relation("UpdatedBy")
+  createdPatientTreatments     PatientTreatment[]     @relation("CreatedBy")
+  updatedPatientTreatments     PatientTreatment[]     @relation("UpdatedBy")
+  updatedPatientMedications    PatientMedication[]    @relation("UpdatedBy")
+  createdPatientMedications    PatientMedication[]    @relation("CreatedBy")
+  updatedPatientPackages       PatientPackage[]       @relation("UpdatedBy")
+  createdPatientPackages       PatientPackage[]       @relation("CreatedBy")
+  createdPatientItems          PatientItem[]          @relation("CreatedBy")
+  updatedPatientItems          PatientItem[]          @relation("UpdatedBy")
+  createdMedicines             Medicine[]             @relation("CreatedBy")
+  updatedMedicines             Medicine[]             @relation("UpdatedBy")
+  createdItems                 Item[]                 @relation("CreatedBy")
+  updatedItems                 Item[]                 @relation("UpdatedBy")
+  createdTreatments            Treatment[]            @relation("CreatedBy")
+  updatedTreatments            Treatment[]            @relation("UpdatedBy")
+  createdPackages              Package[]              @relation("CreatedBy")
+  updatedPackages              Package[]              @relation("UpdatedBy")
+  createdCategories            Category[]             @relation("CreatedBy")
+  updatedCategories            Category[]             @relation("UpdatedBy")
+  createdSuppliers             Supplier[]             @relation("CreatedBy")
+  updatedSuppliers             Supplier[]             @relation("UpdatedBy")
+  createdInventoryTransactions InventoryTransaction[] @relation("CreatedBy")
+  updatedInventoryTransactions InventoryTransaction[] @relation("UpdatedBy")
+  createdInventoryCounts       InventoryCount[]       @relation("CreatedBy")
+  updatedInventoryCounts       InventoryCount[]       @relation("UpdatedBy")
+  createdInventoryCountItems   InventoryCountItem[]   @relation("CreatedBy")
+  updatedInventoryCountItems   InventoryCountItem[]   @relation("UpdatedBy")
+  createdBillings              Billings[]             @relation("CreatedBy")
+  updatedBillings              Billings[]             @relation("UpdatedBy")
+  createdPayments              Payment[]              @relation("CreatedBy")
+  updatedPayments              Payment[]              @relation("UpdatedBy")
+  createdSchedules             Schedule[]             @relation("CreatedBy")
+  updatedSchedules             Schedule[]             @relation("UpdatedBy")
+}
+
+enum Position {
+  ADMIN
+  DOCTOR
+  NURSE
+  RECEPTIONIST
+  DEVELOPER
+}
+
+model AuditLog {
+  id         Int      @id @default(autoincrement())
+  entityId   Int?
+  entityType String?
+  userId     Int
+  user       User     @relation(fields: [userId], references: [id])
+  action     String
+  details    Json
+  createdAt  DateTime @default(now())
+}
+
+model Schedule {
+  id          Int      @id @default(autoincrement())
+  employeeId  Int
+  employee    Employee @relation(fields: [employeeId], references: [id])
+  startTime   DateTime
+  endTime     DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById Int
+  createdBy   Employee @relation("CreatedBy", fields: [createdById], references: [id])
+  updatedById Int
+  updatedBy   Employee @relation("UpdatedBy", fields: [updatedById], references: [id])
+}
+
+model Patients {
+  id                           Int             @id @unique @default(autoincrement())
+  firstName                    String
+  middleName                   String?
+  lastName                     String
+  nationality                  String?
+  maritalStatus                String?
+  dob                          String?
+  gender                       String?
+  source                       String?
+  email                        String          @unique @db.VarChar(191)
+  countryCode                  String
+  phoneNumber                  String
+  address                      String?
+  district                     String?
+  emirate                      String?
+  country                      String?
+  visaType                     String?
+  nationalID                   String?
+  otherID                      String?
+  emergencyContactNumber       String?
+  emergencyContactName         String?
+  emergencyContactRelationship String?
+  allergies                    String?
+  profilePicture               String?
+  createdAt                    DateTime        @default(now())
+  updatedAt                    DateTime        @default(now())
+  doctorId                     Int?
+  mrNumber                     String          @unique
+  appointmentId                Int?
+  billings                     Billings[]
+  consultations                Consultations[]
+  createdById                  Int
+  createdBy                    Employee        @relation("CreatedBy", fields: [createdById], references: [id])
+  updatedById                  Int
+  updatedBy                    Employee        @relation("UpdatedBy", fields: [updatedById], references: [id])
+  deleted                      Boolean         @default(false)
+  deletedAt                    DateTime?
+}
+
+model Consultations {
+  id                  Int                @id @default(autoincrement())
+  status              String
+  appointmentId       Int?
+  doctorId            Int
+  patientId           Int?
+  triageId            Int?
+  patientAssessmentId Int?
+  patientTriageId     Int?
+  createdById         Int
+  createdBy           Employee           @relation("CreatedBy", fields: [createdById], references: [id])
+  updatedById         Int
+  updatedBy           Employee           @relation("UpdatedBy", fields: [updatedById], references: [id])
+  created_at          DateTime           @default(now())
+  updated_at          DateTime           @default(now())
+  doctor              Employee           @relation(fields: [doctorId], references: [id])
+  patient             Patients?          @relation(fields: [patientId], references: [id])
+  patientAssessment   PatientAssessment? @relation(fields: [patientAssessmentId], references: [id])
+  patientTriage       PatientTriage?     @relation(fields: [patientTriageId], references: [id])
+  billings            Billings[]
+}
+
+model Appointments {
+  id          Int      @id @default(autoincrement())
+  patientId   Int
+  doctorId    Int
+  date        DateTime
+  notes       String
+  email       String
+  endTime     String
+  firstName   String
+  lastName    String
+  countryCode String
+  phoneNumber String
+  startTime   String
+  doctor      Employee @relation(fields: [doctorId], references: [id])
+  created_at  DateTime @default(now())
+  updated_at  DateTime @default(now())
+  createdById Int
+  createdBy   Employee @relation("CreatedBy", fields: [createdById], references: [id])
+  updatedById Int
+  updatedBy   Employee @relation("UpdatedBy", fields: [updatedById], references: [id])
+}
+
+model Doctors {
+  id            Int            @id @default(autoincrement())
+  firstName     String
+  lastName      String
+  email         String         @unique @db.VarChar(191)
+  phoneNumber   String
+  created_at    DateTime       @default(now())
+  updated_at    DateTime       @default(now())
+  password      String
+  avaialability Availability[]
+}
+
+model Availability {
+  id         Int      @id @default(autoincrement())
+  doctorId   Int
+  date       DateTime
+  startTime  String
+  endTime    String
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+  doctor     Doctors  @relation(fields: [doctorId], references: [id])
+}
+
+model Allergy {
+  id            Int             @id @default(autoincrement())
+  name          String
+  TriageAllergy TriageAllergy[]
+  created_at    DateTime        @default(now())
+  updated_at    DateTime        @default(now())
+}
+
+model TriageAllergy {
+  id              Int            @id @default(autoincrement())
+  patientTriageId Int?
+  patientTriage   PatientTriage? @relation(fields: [patientTriageId], references: [id])
+  allergyId       Int?
+  allergy         Allergy?       @relation(fields: [allergyId], references: [id])
+}
+
+model Problem {
+  id            Int             @id @default(autoincrement())
+  name          String          @unique
+  TriageProblem TriageProblem[]
+}
+
+model TriageProblem {
+  id              Int            @id @default(autoincrement())
+  patientTriageId Int?
+  patientTriage   PatientTriage? @relation(fields: [patientTriageId], references: [id])
+  problem         Problem?       @relation(fields: [problemId], references: [id])
+  problemId       Int?
+}
+
+model PatientTriage {
+  id                   Int             @id @default(autoincrement())
+  status               String?
+  priority             String?
+  immunizationUpToDate String?
+  immunizationRemarks  String?
+  allergenHistory      String?
+  systolic             String?
+  diastolic            String?
+  temperature          String?
+  height               String?
+  weight               String?
+  spO2                 String?
+  bmi                  String?
+  pulse                String?
+  pastMedicalHistory   String?
+  familyHistory        String?
+  socialHistory        String?
+  surgicalHistory      String?
+  creams               String?
+  nurseAssessment      String?
+  medications          String?
+  otherNotes           String?
+  created_at           DateTime        @default(now())
+  updated_at           DateTime        @default(now())
+  painScale            Int?
+  currentHistory       String?
+  problems             TriageProblem[]
+  allergies            TriageAllergy[]
+  consultations        Consultations[]
+  notes                Note[]
+  createdById          Int
+  createdBy            Employee        @relation("CreatedBy", fields: [createdById], references: [id])
+  updatedById          Int
+  updatedBy            Employee        @relation("UpdatedBy", fields: [updatedById], references: [id])
+}
+
+model PatientAssessment {
+  id                  Int                 @id @default(autoincrement())
+  visitType           String?
+  consultationType    String?
+  status              String?
+  createdAt           DateTime            @default(now())
+  complaints          String?
+  facial_dermapen_prp String?
+  instructions        String?
+  laser_q_note        String?
+  prescription        String?
+  provider_notes      String?
+  recommendations     String?
+  slimming_note       String?
+  images              String[]
+  consultations       Consultations[]
+  patientMedications  PatientMedication[]
+  patientTreatments   PatientTreatment[]
+  patientPackages     PatientPackage[]
+  patientItems        PatientItem[]
+  notes               Note[]
+  createdById         Int
+  createdBy           Employee            @relation("CreatedBy", fields: [createdById], references: [id])
+  updatedById         Int
+  updatedBy           Employee            @relation("UpdatedBy", fields: [updatedById], references: [id])
+}
+
+model Note {
+  id                  Int                @id @default(autoincrement())
+  content             String
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  createdBy           Int
+  noteType            String
+  patientTriageId     Int?
+  patientAssessmentId Int?
+  patientTriage       PatientTriage?     @relation(fields: [patientTriageId], references: [id])
+  patientAssessment   PatientAssessment? @relation(fields: [patientAssessmentId], references: [id])
+  employee            Employee           @relation(fields: [createdBy], references: [id])
+}
+
+model PatientTreatment {
+  id                  Int                @id @default(autoincrement())
+  quantity            Int
+  notes               String?
+  treatmentId         Int
+  treatment           Treatment          @relation(fields: [treatmentId], references: [id])
+  patientAssessmentId Int?
+  patientAssessment   PatientAssessment? @relation(fields: [patientAssessmentId], references: [id])
+  billingId           Int?
+  billing             Billings?          @relation(fields: [billingId], references: [id])
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  createdById         Int
+  createdBy           Employee           @relation("CreatedBy", fields: [createdById], references: [id])
+  updatedById         Int
+  updatedBy           Employee           @relation("UpdatedBy", fields: [updatedById], references: [id])
+}
+
+model PatientMedication {
+  id                  Int                @id @default(autoincrement())
+  quantity            Int
+  notes               String?
+  medicineId          Int
+  medicine            Medicine           @relation(fields: [medicineId], references: [id])
+  patientAssessmentId Int?
+  patientAssessment   PatientAssessment? @relation(fields: [patientAssessmentId], references: [id])
+  billingId           Int?
+  billing             Billings?          @relation(fields: [billingId], references: [id])
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  createdById         Int
+  createdBy           Employee           @relation("CreatedBy", fields: [createdById], references: [id])
+  updatedById         Int
+  updatedBy           Employee           @relation("UpdatedBy", fields: [updatedById], references: [id])
+}
+
+model PatientPackage {
+  id                  Int                @id @default(autoincrement())
+  packageId           Int
+  package             Package            @relation(fields: [packageId], references: [id])
+  quantity            Int
+  notes               String?
+  patientAssessmentId Int?
+  patientAssessment   PatientAssessment? @relation(fields: [patientAssessmentId], references: [id])
+  billingId           Int?
+  billing             Billings?          @relation(fields: [billingId], references: [id])
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  createdById         Int
+  createdBy           Employee           @relation("CreatedBy", fields: [createdById], references: [id])
+  updatedById         Int
+  updatedBy           Employee           @relation("UpdatedBy", fields: [updatedById], references: [id])
+}
+
+model PatientItem {
+  id                  Int                @id @default(autoincrement())
+  itemId              Int
+  item                Item               @relation(fields: [itemId], references: [id])
+  quantity            Int
+  notes               String?
+  patientAssessmentId Int?
+  patientAssessment   PatientAssessment? @relation(fields: [patientAssessmentId], references: [id])
+  billingId           Int?
+  billing             Billings?          @relation(fields: [billingId], references: [id])
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  createdById         Int
+  createdBy           Employee           @relation("CreatedBy", fields: [createdById], references: [id])
+  updatedById         Int
+  updatedBy           Employee           @relation("UpdatedBy", fields: [updatedById], references: [id])
+}
+
+model Medicine {
+  id                    Int                    @id @default(autoincrement())
+  code                  String                 @unique
+  name                  String
+  description           String?
+  cost                  Float
+  price                 Float
+  quantity              Int
+  reorderPoint          Int
+  unit                  String
+  expirationDate        DateTime?
+  categoryId            Int
+  category              Category               @relation(fields: [categoryId], references: [id])
+  supplierId            Int
+  supplier              Supplier               @relation(fields: [supplierId], references: [id])
+  patientMedications    PatientMedication[]
+  inventoryTransactions InventoryTransaction[]
+  inventoryCountItems   InventoryCountItem[]
+  purchaseOrderItems    PurchaseOrderItem[]
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  createdById           Int
+  createdBy             Employee               @relation("CreatedBy", fields: [createdById], references: [id])
+  updatedById           Int
+  updatedBy             Employee               @relation("UpdatedBy", fields: [updatedById], references: [id])
+}
+
+model Item {
+  id                    Int                    @id @default(autoincrement())
+  code                  String                 @unique
+  name                  String
+  description           String?
+  cost                  Float
+  price                 Float
+  quantity              Int
+  reorderPoint          Int
+  unit                  String
+  categoryId            Int
+  category              Category               @relation(fields: [categoryId], references: [id])
+  supplierId            Int
+  supplier              Supplier               @relation(fields: [supplierId], references: [id])
+  patientItems          PatientItem[]
+  inventoryTransactions InventoryTransaction[]
+  inventoryCountItems   InventoryCountItem[]
+  purchaseOrderItems    PurchaseOrderItem[]
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  createdById           Int
+  createdBy             Employee               @relation("CreatedBy", fields: [createdById], references: [id])
+  updatedById           Int
+  updatedBy             Employee               @relation("UpdatedBy", fields: [updatedById], references: [id])
+}
+
+model Treatment {
+  id                Int                @id @default(autoincrement())
+  code              String             @unique
+  name              String
+  description       String?
+  cost              Float
+  price             Float
+  categoryId        Int
+  category          Category           @relation(fields: [categoryId], references: [id])
+  patientTreatments PatientTreatment[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  createdById       Int
+  createdBy         Employee           @relation("CreatedBy", fields: [createdById], references: [id])
+  updatedById       Int
+  updatedBy         Employee           @relation("UpdatedBy", fields: [updatedById], references: [id])
+}
+
+model Package {
+  id              Int              @id @default(autoincrement())
+  code            String           @unique
+  name            String
+  description     String?
+  cost            Float
+  price           Float
+  duration        String
+  categoryId      Int
+  category        Category         @relation(fields: [categoryId], references: [id])
+  patientPackages PatientPackage[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  createdById     Int
+  createdBy       Employee         @relation("CreatedBy", fields: [createdById], references: [id])
+  updatedById     Int
+  updatedBy       Employee         @relation("UpdatedBy", fields: [updatedById], references: [id])
+}
+
+model Category {
+  id          Int         @id @default(autoincrement())
+  name        String
+  description String?
+  medicines   Medicine[]
+  items       Item[]
+  treatments  Treatment[]
+  packages    Package[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  createdById Int
+  createdBy   Employee    @relation("CreatedBy", fields: [createdById], references: [id])
+  updatedById Int
+  updatedBy   Employee    @relation("UpdatedBy", fields: [updatedById], references: [id])
+}
+
+model Supplier {
+  id             Int             @id @default(autoincrement())
+  name           String
+  contactName    String?
+  email          String?
+  phone          String?
+  address        String?
+  medicines      Medicine[]
+  items          Item[]
+  purchaseOrders PurchaseOrder[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  createdById    Int
+  createdBy      Employee        @relation("CreatedBy", fields: [createdById], references: [id])
+  updatedById    Int
+  updatedBy      Employee        @relation("UpdatedBy", fields: [updatedById], references: [id])
+}
+
+model InventoryTransaction {
+  id          Int       @id @default(autoincrement())
+  itemId      Int?
+  item        Item?     @relation(fields: [itemId], references: [id])
+  medicineId  Int?
+  medicine    Medicine? @relation(fields: [medicineId], references: [id])
+  type        String
+  quantity    Int
+  date        DateTime
+  employeeId  Int
+  employee    Employee  @relation(fields: [employeeId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdById Int
+  createdBy   Employee  @relation("CreatedBy", fields: [createdById], references: [id])
+  updatedById Int
+  updatedBy   Employee  @relation("UpdatedBy", fields: [updatedById], references: [id])
+}
+
+model InventoryCount {
+  id          Int                  @id @default(autoincrement())
+  date        DateTime
+  status      String
+  employeeId  Int
+  employee    Employee             @relation(fields: [employeeId], references: [id])
+  items       InventoryCountItem[]
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  createdById Int
+  createdBy   Employee             @relation("CreatedBy", fields: [createdById], references: [id])
+  updatedById Int
+  updatedBy   Employee             @relation("UpdatedBy", fields: [updatedById], references: [id])
+}
+
+model InventoryCountItem {
+  id               Int            @id @default(autoincrement())
+  inventoryCountId Int
+  inventoryCount   InventoryCount @relation(fields: [inventoryCountId], references: [id])
+  itemId           Int?
+  item             Item?          @relation(fields: [itemId], references: [id])
+  medicineId       Int?
+  medicine         Medicine?      @relation(fields: [medicineId], references: [id])
+  expectedQuantity Int
+  actualQuantity   Int
+  notes            String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  createdById      Int
+  createdBy        Employee       @relation("CreatedBy", fields: [createdById], references: [id])
+  updatedById      Int
+  updatedBy        Employee       @relation("UpdatedBy", fields: [updatedById], references: [id])
+}
+
+model PurchaseOrder {
+  id          Int                 @id @default(autoincrement())
+  orderNumber String              @unique
+  supplierId  Int
+  supplier    Supplier            @relation(fields: [supplierId], references: [id])
+  orderDate   DateTime
+  status      String
+  totalAmount Float
+  notes       String?
+  items       PurchaseOrderItem[]
+  createdById Int
+  createdBy   Employee            @relation("CreatedBy", fields: [createdById], references: [id])
+  updatedById Int
+  updatedBy   Employee            @relation("UpdatedBy", fields: [updatedById], references: [id])
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  Employee    Employee?           @relation(fields: [employeeId], references: [id])
+  employeeId  Int?
+}
+
+model PurchaseOrderItem {
+  id              Int           @id @default(autoincrement())
+  purchaseOrderId Int
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
+  itemId          Int?
+  item            Item?         @relation(fields: [itemId], references: [id])
+  medicineId      Int?
+  medicine        Medicine?     @relation(fields: [medicineId], references: [id])
+  quantity        Int
+  unitPrice       Float
+  totalPrice      Float
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+model Billings {
+  id                 Int                 @id @default(autoincrement())
+  patientId          Int?
+  doctorId           Int?
+  consultationId     Int
+  total              Float?
+  tax                Float?              @default(0.00)
+  discount           Float?
+  previousBalance    Float?
+  paymentMade        String?
+  subtotal           Float?
+  status             String              @default("Pending")
+  doctor             Employee?           @relation(fields: [doctorId], references: [id])
+  patient            Patients?           @relation(fields: [patientId], references: [id])
+  patientTreatments  PatientTreatment[]
+  patientMedications PatientMedication[]
+  patientPackages    PatientPackage[]
+  patientItems       PatientItem[]
+  consultation       Consultations       @relation(fields: [consultationId], references: [id])
+  payments           Payment[]
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  createdById        Int
+  createdBy          Employee            @relation("CreatedBy", fields: [createdById], references: [id])
+  updatedById        Int
+  updatedBy          Employee            @relation("UpdatedBy", fields: [updatedById], references: [id])
+}
+
+model Payment {
+  id          Int      @id @default(autoincrement())
+  paymentType String
+  amount      Float
+  billingId   Int
+  billing     Billings @relation(fields: [billingId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById Int
+  createdBy   Employee @relation("CreatedBy", fields: [createdById], references: [id])
+  updatedById Int
+  updatedBy   Employee @relation("UpdatedBy", fields: [updatedById], references: [id])
+}

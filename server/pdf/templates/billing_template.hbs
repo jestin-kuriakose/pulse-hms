@@ -1,0 +1,222 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Invoice #{{id}}</title>
+    <style>
+      @import
+      url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
+      body { font-family: 'Roboto', sans-serif; line-height: 1.4; color: #333;
+      max-width: 800px; margin: 0 auto; padding: 20px; font-size: 12px; }
+      .invoice-container { background-color: #ffffff; padding: 10px 20px 20px; }
+      .header { display: flex; justify-content: space-between; align-items:
+      flex-start; margin-bottom: 30px; border-bottom: 2px solid #D4AF37;
+      padding-bottom: 20px; } .logo-container { display: flex; flex-direction:
+      column; align-items: flex-start; } .logo { max-width: 120px;
+      margin-bottom: 10px; } .clinic-info { font-size: 0.9em; line-height: 1.2;
+      } .invoice-details { text-align: right; color: #555; } .invoice-details h1
+      { color: #D4AF37; margin: 0 0 10px 0; font-size: 24px; } .section {
+      margin-bottom: 30px; } .section h2 { color: #D4AF37; border-bottom: 1px
+      solid #eee; padding-bottom: 10px; font-size: 18px; margin-bottom: 15px; }
+      .patient-info { display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+      } .patient-info p { margin: 5px 0; } table { width: 100%; border-collapse:
+      collapse; margin-bottom: 15px; font-size: 11px; } th, td { border: 1px
+      solid #e0e0e0; padding: 6px; text-align: left; } th { background-color:
+      #f8f8f8; font-weight: bold; color: #333; text-transform: uppercase; }
+      .section h2 { color: #D4AF37; border-bottom: 1px solid #eee;
+      padding-bottom: 8px; font-size: 16px; margin-bottom: 12px; } .totals {
+      text-align: right; font-size: 1em; } .totals p { margin: 3px 0; }
+      tr:nth-child(even) { background-color: #f9f9f9; } .status { font-weight:
+      bold; color: #fff; padding: 5px 10px; border-radius: 5px; display:
+      inline-block; } .status-pending { background-color: #ffa500; }
+      .status-paid { background-color: #4CAF50; } .icon { margin-right: 5px;
+      color: #D4AF37; }
+    </style>
+    <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+  </head>
+  <body>
+    <div class="invoice-container">
+      <div class="header">
+        <div class="logo-container">
+          <img
+            src="https://mpdgeyjwuinfznymilgd.supabase.co/storage/v1/object/public/sinta-bucket/sinta-logo-nobg.png"
+            alt="Sinta Medical Clinic Logo"
+            class="logo"
+          />
+          <div class="clinic-info">
+            <p>Office 338, Al Ghurair Centre, Deira, Dubai, UAE</p>
+            <p>Email: info@sintamedicalcenter.ae</p>
+            <p>Phone: +971 4 123 4567</p>
+          </div>
+        </div>
+        <div class="invoice-details">
+          <h1>Invoice #{{id}}</h1>
+          <p><i class="far fa-calendar icon"></i>
+            Date:
+            {{formatDate createdAt "MMMM D, YYYY h:mm A"}}</p>
+          <p>Status:
+            <span
+              class="status status-{{toLowerCase status}}"
+            >{{status}}</span></p>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2><i class="fas fa-user icon"></i> Patient Information</h2>
+        <div class="patient-info">
+          <div>
+            <p><strong>Name:</strong>
+              {{patient.firstName}}
+              {{patient.middleName}}
+              {{patient.lastName}}</p>
+            <p><strong>MR Number:</strong> {{patient.mrNumber}}</p>
+            <p><strong>Date of Birth:</strong>
+              {{formatDate patient.dob "MMMM D, YYYY"}}</p>
+            <p><strong>Gender:</strong> {{patient.gender}}</p>
+            <p><strong>Nationality:</strong> {{patient.nationality}}</p>
+          </div>
+          <div>
+            <p><strong>Email:</strong> {{patient.email}}</p>
+            <p><strong>Phone:</strong>
+              {{patient.countryCode}}
+              {{patient.phoneNumber}}</p>
+            <p><strong>Address:</strong>
+              {{patient.address}},
+              {{patient.district}},
+              {{patient.emirate}},
+              {{patient.country}}</p>
+            <p><strong>Allergies:</strong> {{patient.allergies}}</p>
+            <p><strong>Emergency Contact:</strong>
+              {{patient.emergencyContactName}}
+              ({{patient.emergencyContactRelationship}})</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2><i class="fas fa-user-md icon"></i> Billing Details</h2>
+        <p><strong>Doctor:</strong>
+          Dr.
+          {{doctor.firstName}}
+          {{doctor.lastName}}</p>
+        <p><strong>Department:</strong> {{doctor.department}}</p>
+      </div>
+
+      {{#if patientMedications}}
+        <div class="section">
+          <h2><i class="fas fa-pills icon"></i> Medications</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Medicine</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{#each patientMedications}}
+                <tr>
+                  <td>{{this.medicine.name}}</td>
+                  <td>{{this.quantity}}</td>
+                  <td>AED {{this.medicine.price}}</td>
+                  <td>AED {{multiply this.quantity this.medicine.price}}</td>
+                </tr>
+              {{/each}}
+            </tbody>
+          </table>
+        </div>
+      {{/if}}
+
+      {{#if patientTreatments}}
+        <div class="section">
+          <h2><i class="fas fa-procedures icon"></i> Treatments</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Treatment</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{#each patientTreatments}}
+                <tr>
+                  <td>{{this.treatment.name}}</td>
+                  <td>{{this.quantity}}</td>
+                  <td>AED {{this.treatment.price}}</td>
+                  <td>AED {{multiply this.quantity this.treatment.price}}</td>
+                </tr>
+              {{/each}}
+            </tbody>
+          </table>
+        </div>
+      {{/if}}
+
+      {{#if patientPackages}}
+        <div class="section">
+          <h2><i class="fas fa-box-open icon"></i> Packages</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Package</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{#each patientPackages}}
+                <tr>
+                  <td>{{this.package.name}}</td>
+                  <td>{{this.quantity}}</td>
+                  <td>AED {{this.package.price}}</td>
+                  <td>AED {{multiply this.quantity this.package.price}}</td>
+                </tr>
+              {{/each}}
+            </tbody>
+          </table>
+        </div>
+      {{/if}}
+
+      <div class="section totals">
+        <p>Subtotal: AED {{subtotal}}</p>
+        <p>Discount: AED {{discount}}</p>
+        <p>Tax ({{tax}}%): AED {{taxAmount}}</p>
+        <p><strong>Total: AED {{total}}</strong></p>
+      </div>
+
+      {{#if payments}}
+        <div class="section">
+          <h2><i class="fas fa-credit-card icon"></i> Payments</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{#each payments}}
+                <tr>
+                  <td>{{formatDate this.createdAt "MMMM D, YYYY h:mm A"}}</td>
+                  <td>{{this.paymentType}}</td>
+                  <td>AED {{this.amount}}</td>
+                </tr>
+              {{/each}}
+            </tbody>
+          </table>
+        </div>
+      {{/if}}
+
+      <div class="section totals">
+        <p><strong>Balance Due: AED {{subtract
+              total
+              (sum payments "amount")
+            }}</strong></p>
+      </div>
+    </div>
+  </body>
+</html>

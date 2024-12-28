@@ -1,0 +1,13 @@
+export { default as Dashboard } from "./Dashboard";
+export { default as Patients } from "./Patients";
+export { default as Appointments } from "./Appointments";
+export { default as Doctors } from "./Doctors";
+export { default as Settings } from "./Settings";
+export { default as EMRSearch } from "./EMRSearch";
+export { default as Departments } from "./Departments";
+export { default as Earnings } from "./Earnings";
+export { default as Employees } from "./Employees";
+export { default as Prescriptions } from "./Prescriptions";
+export { default as Registration } from "./Registration";
+export { default as Billing } from "./Billing";
+export { default as SinglePatient } from "./SinglePatient";

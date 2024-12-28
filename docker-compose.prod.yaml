@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile.prod
+    container_name: backend
+    networks:
+      - node-network
+    ports:
+      - "8000:8000"
+    environment:
+      POSTGRES_USER_FILE=/run/secrets/db_user
+      POSTGRES_PASSWORD_FILE=/run/secrets/db_password
+      POSTGRES_DB_FILE=/run/secrets/db_name
+    secrets:
+      - db_user
+      - db_password
+      - db_name
+    entrypoint: ["sh", "-c", "npx prisma migrate deploy && npm start"]
+
+  frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile.prod
+    container_name: frontend
+    networks:
+      - node-network
+    ports:
+      - "80:80"
+
+  db:
+    image: postgres:latest
+    container_name: db
+    restart: always
+    ports:
+      - "5432:5432"
+    secrets:
+      - db_user
+      - db_password
+      - db_name
+    environment:
+      POSTGRES_USER_FILE=/run/secrets/db_user
+      POSTGRES_PASSWORD_FILE=/run/secrets/db_password
+      POSTGRES_DB_FILE=/run/secrets/db_name
+    volumes:
+      - ./data:/var/lib/postgresql/data
+    networks:
+      - node-network
+
+  nginx:
+    build:
+      context: ./nginx
+    container_name: nginx
+    networks:
+      - node-network
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+      - frontend
+
+secrets:
+  db_user:
+    file: ./secrets/db_user
+  db_password:
+    file: ./secrets/db_password
+  db_name:
+    file: ./secrets/db_name
+
+networks:
+  node-network:
+    driver: bridge
