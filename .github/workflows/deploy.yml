@@ -1,0 +1,49 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install SSH key
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          known_hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
+          
+      - name: Deploy to VPS
+        env:
+          DEPLOY_PATH: "~/app"
+          VPS_USERNAME: ${{ secrets.VPS_USERNAME }}
+          VPS_HOST: pulse.sintamedicalcenter.ae
+        run: |
+          # Create deployment directory if it doesn't exist
+          ssh $VPS_USERNAME@$VPS_HOST "mkdir -p $DEPLOY_PATH"
+          
+          # Copy files to VPS
+          scp -r docker-compose.yml .env webserver client server $VPS_USERNAME@$VPS_HOST:$DEPLOY_PATH/
+          
+          # Deploy on VPS
+          ssh $VPS_USERNAME@$VPS_HOST "cd $DEPLOY_PATH && \
+            docker compose build && \
+            docker compose down || true && \
+            docker compose up -d && \
+            docker system prune -af || true && \
+            docker compose ps"
+            
+      - name: Verify Deployment
+        env:
+          VPS_HOST: pulse.sintamedicalcenter.ae
+        run: |
+          # Wait for services to be ready
+          sleep 30
+          
+          # Check if the site is accessible
+          curl -sSf https://$VPS_HOST || echo "Website might still be starting up..."
